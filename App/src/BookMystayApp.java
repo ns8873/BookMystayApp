@@ -1,5 +1,4 @@
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 // -------------------- Domain Model --------------------
 
@@ -28,16 +27,7 @@ abstract class Room {
     }
 
     public abstract String getRoomType();
-
-    public void displayDetails() {
-        System.out.println("Room Type: " + getRoomType());
-        System.out.println("Beds: " + beds);
-        System.out.println("Size: " + size + " sqm");
-        System.out.println("Price: $" + price);
-    }
 }
-
-// Concrete Room Types
 
 class SingleRoom extends Room {
     public SingleRoom() {
@@ -73,13 +63,11 @@ class SuiteRoom extends Room {
 
 class RoomInventory {
 
-    private Map<String, Integer> inventory;
+    private Map<String, Integer> inventory = new HashMap<>();
 
     public RoomInventory() {
-        inventory = new HashMap<>();
-
         inventory.put("Single", 5);
-        inventory.put("Double", 0);   // Example: unavailable
+        inventory.put("Double", 3);
         inventory.put("Suite", 2);
     }
 
@@ -88,31 +76,54 @@ class RoomInventory {
     }
 }
 
-// -------------------- Search Service (Read Only) --------------------
+// -------------------- Reservation Request --------------------
 
-class SearchService {
+class Reservation {
 
-    private RoomInventory inventory;
+    private String guestName;
+    private String roomType;
 
-    public SearchService(RoomInventory inventory) {
-        this.inventory = inventory;
+    public Reservation(String guestName, String roomType) {
+        this.guestName = guestName;
+        this.roomType = roomType;
     }
 
-    public void searchAvailableRooms(Room[] rooms) {
+    public String getGuestName() {
+        return guestName;
+    }
 
-        System.out.println("Available Rooms\n");
+    public String getRoomType() {
+        return roomType;
+    }
 
-        for (Room room : rooms) {
+    public void displayRequest() {
+        System.out.println("Guest: " + guestName + " requested " + roomType + " room");
+    }
+}
 
-            int available = inventory.getAvailability(room.getRoomType());
+// -------------------- Booking Request Queue --------------------
 
-            // Defensive validation
-            if (available > 0) {
+class BookingRequestQueue {
 
-                room.displayDetails();
-                System.out.println("Available: " + available);
-                System.out.println();
-            }
+    private Queue<Reservation> queue;
+
+    public BookingRequestQueue() {
+        queue = new LinkedList<>();
+    }
+
+    // Add request to queue
+    public void submitRequest(Reservation reservation) {
+        queue.offer(reservation);
+        System.out.println("Request added for " + reservation.getGuestName());
+    }
+
+    // View queued requests
+    public void displayQueue() {
+
+        System.out.println("\nCurrent Booking Queue (FIFO Order)\n");
+
+        for (Reservation r : queue) {
+            r.displayRequest();
         }
     }
 }
@@ -123,23 +134,26 @@ public class HotelApp {
 
     public static void main(String[] args) {
 
-        // Create room domain objects
-        Room single = new SingleRoom();
-        Room doubleRoom = new DoubleRoom();
-        Room suite = new SuiteRoom();
-
-        // Store rooms for searching
-        Room[] rooms = {single, doubleRoom, suite};
-
-        // Initialize inventory
+        // Initialize inventory (not modified in this stage)
         RoomInventory inventory = new RoomInventory();
 
-        // Initialize search service
-        SearchService searchService = new SearchService(inventory);
+        // Initialize booking queue
+        BookingRequestQueue requestQueue = new BookingRequestQueue();
 
-        // Guest initiates search
-        searchService.searchAvailableRooms(rooms);
+        // Guests submit booking requests
+        Reservation r1 = new Reservation("Alice", "Single");
+        Reservation r2 = new Reservation("Bob", "Suite");
+        Reservation r3 = new Reservation("Charlie", "Single");
+        Reservation r4 = new Reservation("David", "Double");
 
-        System.out.println("Search completed. Inventory state unchanged.");
+        requestQueue.submitRequest(r1);
+        requestQueue.submitRequest(r2);
+        requestQueue.submitRequest(r3);
+        requestQueue.submitRequest(r4);
+
+        // Display queue order
+        requestQueue.displayQueue();
+
+        System.out.println("\nRequests stored in arrival order. Allocation will happen later.");
     }
 }
