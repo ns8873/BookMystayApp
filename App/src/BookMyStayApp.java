@@ -3,9 +3,9 @@ import java.util.*;
 
 // Booking class
 class Booking implements Serializable {
-int bookingId;
-String customerName;
-String roomType;
+    int bookingId;
+    String customerName;
+    String roomType;
 
     public Booking(int bookingId, String customerName, String roomType) {
         this.bookingId = bookingId;
